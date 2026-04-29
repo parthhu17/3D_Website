@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIKE STUDIO | Luxury 3D Footwear</title>
+    <meta name="description" content="Premium Nike footwear curated for champions. Experience immersive 3D shopping.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body data-theme="dark">
+    <!-- Ambient 3D Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Custom Cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-circle"></div>
+
+    <!-- Scroll Progress -->
+    <div id="scroll-progress"></div>
+
+    <!-- Navbar -->
+    <nav id="navbar">
+        <a href="#home" class="nav-logo">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M22.37,5.55C21.43,5.17,17.2,5.11,13.88,8.23C11.69,10.28,7.95,14.9,3.64,18.82C2.75,19.63,1.5,18.88,1.5,17.5C1.5,16.3 3,11 11,8C15,6.5 19.5,6.5 22.37,5.55Z">
+                </path>
+            </svg>
+            <span>NIKE STUDIO</span>
+        </a>
+        <div class="nav-links">
+            <a href="#home" class="active">Home</a>
+            <a href="#shop">Shop</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <div class="nav-actions">
+            <div class="cart-icon" onclick="toggleCart()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path
+                        d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm1-12H6m0 0l1-4h11l1 4m-13 0h13m0 0l-1.5 9h-10L6 8z">
+                    </path>
+                </svg>
+                <div class="cart-badge" id="cart-count">0</div>
+            </div>
+            <a href="#auth" class="btn-login">Login</a>
+            <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z">
+                    </path>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Cart Drawer -->
+    <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+    <div id="cart-drawer">
+        <div class="cart-header">
+            <h2 class="bebas">Your Bag</h2>
+            <span class="close-cart" onclick="toggleCart()">&times;</span>
+        </div>
+        <div class="cart-items" id="cart-items-container">
+            <!-- Items injected via JS -->
+            <div id="empty-cart-msg" style="text-align: center; margin-top: 50px;">
+                <svg width="100" height="100" opacity="0.3" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M22.37,5.55C21.43,5.17,17.2,5.11,13.88,8.23C11.69,10.28,7.95,14.9,3.64,18.82C2.75,19.63,1.5,18.88,1.5,17.5C1.5,16.3 3,11 11,8C15,6.5 19.5,6.5 22.37,5.55Z">
+                    </path>
+                </svg>
+                <p>Your bag is empty.</p>
+            </div>
+        </div>
+        <div class="cart-total">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <span>Subtotal</span>
+                <span id="cart-subtotal">₹0</span>
+            </div>
+            <button class="auth-btn" onclick="checkout()">Checkout</button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span>JUST</span><br>
+                <span>DO</span><br>
+                <span style="color: var(--accent-red)">IT</span>
+            </h1>
+            <p class="hero-subtext">Experience the next generation of performance footwear. Curated luxury streetwear
+                for those who never stop.</p>
+            <div class="hero-btns">
+                <a href="#shop" class="btn btn-primary">Shop Now</a>
+                <a href="#about" class="btn btn-outline">Explore</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-bg-glow"></div>
+            <canvas id="hero-canvas"></canvas>
+            <div class="badge badge-new">New Drop</div>
+            <div class="badge badge-limited">Limited Edition</div>
+        </div>
+        <div class="ticker-wrap">
+            <div class="ticker">
+                <span>FREE SHIPPING • NEW ARRIVALS • LIMITED DROPS • JUST DO IT • FREE SHIPPING • NEW ARRIVALS • LIMITED
+                    DROPS • JUST DO IT • </span>
+                <span>FREE SHIPPING • NEW ARRIVALS • LIMITED DROPS • JUST DO IT • FREE SHIPPING • NEW ARRIVALS • LIMITED
+                    DROPS • JUST DO IT • </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shop Section -->
+    <section id="shop">
+        <div class="section-header reveal">
+            <h2>The Collection</h2>
+        </div>
+
+        <div class="filter-bar reveal">
+            <div class="filter-pill active" onclick="filterProducts('All', this)">All</div>
+            <div class="filter-pill" onclick="filterProducts('Running', this)">Running</div>
+            <div class="filter-pill" onclick="filterProducts('Lifestyle', this)">Lifestyle</div>
+            <div class="filter-pill" onclick="filterProducts('Jordan', this)">Jordan</div>
+            <div class="filter-pill" onclick="filterProducts('Air Max', this)">Air Max</div>
+        </div>
+
+        <div class="product-grid" id="product-grid">
+            <!-- Products injected via JS -->
+        </div>
+    </section>
+
+    <!-- Auth Section -->
+    <section id="auth">
+        <div class="auth-logo-bg" id="auth-bg"></div>
+        <div class="auth-card reveal">
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="login-tab" onclick="switchAuth('login')">Login</div>
+                <div class="auth-tab" id="signup-tab" onclick="switchAuth('signup')">Sign Up</div>
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <input type="email" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" placeholder="Password" required>
+                </div>
+                <p style="font-size: 0.8rem; text-align: right; margin-bottom: 20px;"><a href="#"
+                        style="color: var(--accent-red); text-decoration: none;">Forgot Password?</a></p>
+                <button type="submit" class="auth-btn">LOGIN</button>
+            </form>
+
+            <form id="signup-form" class="hidden">
+                <div class="form-group">
+                    <input type="text" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" placeholder="Password" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" placeholder="Confirm Password" required>
+                </div>
+                <label style="font-size: 0.8rem; display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+                    <input type="checkbox" required style="width: auto;"> I agree to Terms & Conditions
+                </label>
+                <button type="submit" class="auth-btn">SIGN UP</button>
+            </form>
+
+            <div class="social-login">
+                <p style="font-size: 0.8rem; opacity: 0.6;">Or continue with</p>
+                <div class="social-icons">
+                    <div class="social-icon">G</div>
+                    <div class="social-icon">A</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="about-top">
+            <div class="about-text reveal">
+                <h2 class="bebas" style="font-size: 4rem;">Our Story</h2>
+                <p style="margin-top: 20px; line-height: 1.8; opacity: 0.8;">Nike Studio is a premium authorized
+                    reseller of Nike footwear, curating the finest collections since 2015. We are focused on authentic
+                    products and an exceptional customer experience across India. Our mission is to bring the spirit of
+                    innovation and inspiration to every athlete* in the world.</p>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <h3 class="bebas" data-target="50">0</h3>
+                        <p>K+ Customers</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3 class="bebas" data-target="200">0</h3>
+                        <p>+ Products</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3 class="bebas" data-target="8">0</h3>
+                        <p>+ Years</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3 class="bebas" data-target="5">0</h3>
+                        <p>Rating ★</p>
+                    </div>
+                </div>
+            </div>
+            <div class="about-visual reveal">
+                <canvas id="about-canvas"></canvas>
+            </div>
+        </div>
+
+        <div class="values-grid">
+            <div class="value-card reveal">
+                <h3 class="bebas">Authenticity</h3>
+                <p>100% genuine products guaranteed from authorized sources.</p>
+            </div>
+            <div class="value-card reveal">
+                <h3 class="bebas">Free Returns</h3>
+                <p>No-hassle returns within 30 days of purchase.</p>
+            </div>
+            <div class="value-card reveal">
+                <h3 class="bebas">Premium Quality</h3>
+                <p>Only the best materials and latest technologies.</p>
+            </div>
+        </div>
+
+        <div class="timeline reveal">
+            <div class="timeline-item">2015 Founded</div>
+            <div class="timeline-item">2018 Online Store</div>
+            <div class="timeline-item">2021 50K Customers</div>
+            <div class="timeline-item">2024 Pan-India</div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="section-header reveal">
+            <h2>Contact Us</h2>
+        </div>
+        <div class="contact-container">
+            <div class="contact-form reveal">
+                <form id="contact-form">
+                    <div class="form-group">
+                        <input type="text" placeholder="Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <select
+                            style="width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border-color); padding: 12px 0; color: var(--text-color); outline: none;">
+                            <option value="" disabled selected>Subject</option>
+                            <option value="Order Issue">Order Issue</option>
+                            <option value="General Inquiry">General Inquiry</option>
+                            <option value="Returns">Returns</option>
+                            <option value="Partnership">Partnership</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Message"
+                            style="width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border-color); padding: 12px 0; color: var(--text-color); outline: none; min-height: 100px;"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message ✓</button>
+                </form>
+            </div>
+            <div class="contact-info reveal">
+                <div class="info-card">
+                    <div>📍</div>
+                    <div>
+                        <strong>Address</strong><br>
+                        404 Sneaker Lane, Koregaon Park, Pune, MH 411001
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div>📞</div>
+                    <div>
+                        <strong>Phone</strong><br>
+                        +91 98765 43210
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div>📧</div>
+                    <div>
+                        <strong>Email</strong><br>
+                        support@nikestudio.in
+                    </div>
+                </div>
+                <div class="map-placeholder">
+                    📍 Find us in Pune
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="nav-logo" style="margin-bottom: 20px;">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M22.37,5.55C21.43,5.17,17.2,5.11,13.88,8.23C11.69,10.28,7.95,14.9,3.64,18.82C2.75,19.63,1.5,18.88,1.5,17.5C1.5,16.3 3,11 11,8C15,6.5 19.5,6.5 22.37,5.55Z">
+                        </path>
+                    </svg>
+                    <span>NIKE STUDIO</span>
+                </div>
+                <p style="opacity: 0.6; line-height: 1.6;">Engineered for champions. Curating the best of Nike since
+                    2015.</p>
+            </div>
+            <div class="footer-col">
+                <h4 class="bebas">Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#shop">Shop</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="bebas">Customer Service</h4>
+                <ul>
+                    <li><a href="#">Size Guide</a></li>
+                    <li><a href="#">Returns</a></li>
+                    <li><a href="#">Track Order</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="bebas">Newsletter</h4>
+                <p style="opacity: 0.6; margin-bottom: 15px; font-size: 0.9rem;">Join for early access to drops.</p>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="Email Address">
+                    <button class="add-cart-btn" style="border-radius: 5px; width: 40px; height: 40px;">→</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 Nike Studio. Not affiliated with Nike Inc.</p>
+            <div style="display: flex; gap: 20px;">
+                <a href="#" style="color: inherit; text-decoration: none;">Privacy Policy</a>
+                <a href="#" style="color: inherit; text-decoration: none;">Terms</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Success! Action completed.</div>
+
+    <!-- Custom Scripts -->
+    <script src="script.js"></script>
+</body>
+
+</html>
